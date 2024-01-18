@@ -9,8 +9,8 @@ import (
 
 const (
   PUBLIC = "public"
-  CERTPATH = "security/cert.crt"
-  KEYPATH = "security/pkey.pem"
+  CERTPATH = "src/security/cert.crt"
+  KEYPATH = "src/security/pkey.pem"
 )
 
 func mainHandler(h http.Handler) http.Handler {
