@@ -1,0 +1,4 @@
+(execute from inside root/src/security) openssl genpkey -algorithm RSA -out pkey.pem
+-----BEGIN PRIVATE KEY-----
+DUMMYSTUFFHERE
+-----END PRIVATE KEY-----

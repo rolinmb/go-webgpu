@@ -1,0 +1,4 @@
+(execute from inside root/src/security) openssl req -new -key pkey.pem -out csr.pem
+-----BEGIN CERTIFICATE REQUEST-----
+DUMMYSTUFFHERE
+-----END CERTIFICATE REQUEST-----
