@@ -1,0 +1,10 @@
+body {
+  margin: 0;
+}
+
+#webgpu-target {
+  position: absolute;
+  background-color: black;
+  width: 1080;
+  height: 720;
+}

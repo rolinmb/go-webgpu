@@ -13,6 +13,13 @@ async function simpleTriangle() {
       alert("Couldn't get local GPU adapter logical device");
       return;
     }
+    const canvas = document.getElementById("webgpu-target");
+    const ctx = canvas.getContext("webgpu");
+    ctx.configure({
+      device: device,
+      format: navigator.gpu.getPreferredCanvasFormat(),
+      alphaMode: "premultiplied",
+    });
     const shaders = `
     struct VertexOut{
       @builtin(position) position : vec4f,
@@ -31,13 +38,6 @@ async function simpleTriangle() {
     }`;
     const shaderModule = device.createShaderModule({
       code: shaders,
-    });
-    const canvas = document.getElementById("webgpu-target");
-    const ctx = canvas.getContext("webgpu");
-    ctx.configure({
-      device: device,
-      format: navigator.gpu.getPreferredCanvasFormat(),
-      alphaMode: "premultiplied",
     });
     const vertices = new Float32Array([
        0.0,  0.6, 0, 1, 1, 0, 0, 1,
@@ -87,11 +87,10 @@ async function simpleTriangle() {
     };
     const renderPipeline = device.createRenderPipeline(pipelineDescriptor);
     const commandEncoder = device.createCommandEncoder();
-    const clearColor = { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
     const renderPassDescriptor = {
       colorAttachments: [
         {
-          clearValue: clearColor,
+          clearValue: { r: 0.0, g: 0.5, b: 1.0, a: 1.0 },
           loadOp: "clear",
           storeOp: "store",
           view: ctx.getCurrentTexture().createView(),
