@@ -20,6 +20,16 @@ async function simpleTriangle() {
       format: navigator.gpu.getPreferredCanvasFormat(),
       alphaMode: "premultiplied",
     });
+    const vertices = new Float32Array([
+       0.0,  0.6, 0, 1, 1, 0, 0, 1,
+      -0.5, -0.6, 0, 1, 0, 1, 0, 1,
+       0.5, -0.6, 0, 1, 0, 0, 1, 1,
+    ]);
+    const vertexBuffer = device.createBuffer({
+      size: vertices.byteLength,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    });
+    device.queue.writeBuffer(vertexBuffer, 0, vertices, 0, vertices.length);
     const shaders = `
     struct VertexOut{
       @builtin(position) position : vec4f,
@@ -39,16 +49,6 @@ async function simpleTriangle() {
     const shaderModule = device.createShaderModule({
       code: shaders,
     });
-    const vertices = new Float32Array([
-       0.0,  0.6, 0, 1, 1, 0, 0, 1,
-      -0.5, -0.6, 0, 1, 0, 1, 0, 1,
-       0.5, -0.6, 0, 1, 0, 0, 1, 1,
-    ]);
-    const vertexBuffer = device.createBuffer({
-      size: vertices.byteLength,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    });
-    device.queue.writeBuffer(vertexBuffer, 0, vertices, 0, vertices.length);
     const vertexBuffers = [{
       attributes: [
         {
@@ -66,6 +66,10 @@ async function simpleTriangle() {
       stepMode: "vertex",
     }];
     const pipelineDescriptor = {
+      layout: "auto",
+      primitive: {
+        topology: "triangle-list",
+      },
       vertex: {
         module: shaderModule,
         entryPoint: "vertex_main",
@@ -79,11 +83,7 @@ async function simpleTriangle() {
             format: navigator.gpu.getPreferredCanvasFormat(),
           },
         ],
-      },
-      primitive: {
-        topology: "triangle-list",
-      },
-      layout: "auto",
+      }
     };
     const renderPipeline = device.createRenderPipeline(pipelineDescriptor);
     const commandEncoder = device.createCommandEncoder();
