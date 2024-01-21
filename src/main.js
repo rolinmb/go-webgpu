@@ -1,3 +1,5 @@
+import { vec3, mat4 } from "gl-matrix";
+
 async function cube() {
     if (!navigator.gpu) {
       alert("WebGPU not supported");
