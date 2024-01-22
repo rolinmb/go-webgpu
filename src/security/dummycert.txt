@@ -1,4 +1,4 @@
-(execute from inside root/src/security) openssl x509 -req -days 365 -in csr.pem -signkey privatekey.pem -out cert.crt
+(execute from inside root/src/security) openssl x509 -req -days 365 -in csr.pem -signkey pkey.pem -out cert.crt
 -----BEGIN CERTIFICATE-----
 DUMMYSTUFFHERE
 -----END CERTIFICATE-----
