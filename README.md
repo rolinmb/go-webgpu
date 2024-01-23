@@ -1,7 +1,7 @@
-Learning the WebGPU JavaScript API; hosting/serving the content with golang net/http https serveir
+Learning the WebGPU JavaScript API <b>without TypeScript</b>:
+- bundling with node.js / webpack
+- hosting/serving the content with CORS-enabled golang net/http https server
 
-Only works with Google Chrome right now (most stable WebGPU engine it seems). For some reason doesn't work with Firefox.
+Only works with Google Chrome as of my last testing (1/23/2024 @ 12:22PM CST) (most stable WebGPU host)
 
-Webpack not currently working
-
-Build and run HTTPS hosting server (from root): go build -C src -o main && ./src/main
+Build and run HTTPS hosting server (from root): go build -C src -o main && npm run prod && ./src/main
