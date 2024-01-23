@@ -3,7 +3,7 @@ const bundleOutputDir = "./public";
 
 module.exports = {
   entry: {
-    main: "./src/main"  
+    main: "/src/triangle"  
   },
   output: {
     filename: "dist.bundle.js",

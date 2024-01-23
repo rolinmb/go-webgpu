@@ -2,6 +2,6 @@ Learning the WebGPU JavaScript API; hosting/serving the content with golang net/
 
 Only works with Google Chrome right now (most stable WebGPU engine it seems). For some reason doesn't work with Firefox.
 
-Currently unable to render 3d projections without typescript.
+Webpack not currently working
 
-Build and run (from root): go build -C src -o main && npm run prod && ./src/main
+Build and run HTTPS hosting server (from root): go build -C src -o main && ./src/main
