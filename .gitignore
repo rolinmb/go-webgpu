@@ -3,5 +3,6 @@ src/security/csr.pem
 src/security/cert.crt
 src/main
 src/main.exe
+public/dist.bundle.js
 public/dist.bundle.js.map
 node_modules
