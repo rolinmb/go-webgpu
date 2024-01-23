@@ -1,7 +1,7 @@
 {
   "name": "go-webgpu",
   "version": "1.0.0",
-  "description": "WebGPU hosted from golang HTTPS server",
+  "description": "WebGPU (via vanilla JavaScript) hosted from golang HTTPS server",
   "main": "src/main.js",
   "scripts": {
     "dev": "webpack --mode development",
