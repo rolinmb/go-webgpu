@@ -1,23 +1,21 @@
-const vertexShader = `
-[[block]] struct Uniforms {
-  mvpMatrix : mat4x4<f32>;
+const shaders = `
+struct Uniforms {
+  mvpMatrix : mat4x4<f32>,
 }
-[[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+@binding(0) @group(0) var<uniform> uniforms : Uniforms;
 struct Output {
-  [[builtin(position)]] Position : vec4<f32>;
-  [[location(0)]] vColor : vec4<f32>;
+  @builtin(position) Position : vec4<f32>,
+  @location(0) vColor : vec4<f32>,
 }
-[[stage(vertex)]]
-fn main([[location(0)]] pos: vec4<f32>, [[location(1)]] color: vec4<f32>) -> Output {
+@vertex
+fn vs_main(@location(0) pos: vec4<f32>, @location(1) color: vec4<f32>) -> Output {
   var output: Output;
   output.Position = uniforms.mvpMatrix * pos;
   output.vColor = color;
   return output;
-}`;
-
-const fragmentShader = `
-[[stage(fragment)]]
-fn main([[location(0)]] vColor: vec4<f32>) -> [[location(0)]] vec4<f32> {
+}
+@fragment
+fn fs_main(@location(0) vColor: vec4<f32>) -> @location(0) vec4<f32> {
   return vColor;
 }`;
 
@@ -112,12 +110,12 @@ const vertexClrData = new Float32Array([
 ]);
 
 function newId4() {
-  return [
+  return new Float32Array([
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
     0, 0, 0, 1
-  ];
+  ]);
 }
 
 function toId4(m) {
@@ -386,9 +384,9 @@ async function simpleCube() {
     layout: "auto",
     vertex: {
       module: device.createShaderModule({
-        code: vertexShader
+        code: shaders
       }),
-      entryPoint: "main",
+      entryPoint: "vs_main",
       buffers: [
         {
           arrayStride: 12,
@@ -410,9 +408,9 @@ async function simpleCube() {
     },
     fragment: {
       module: device.createShaderModule({
-        code: fragmentShader
+        code: shaders
       }),
-      entryPoint: "main",
+      entryPoint: "fs_main",
       targets: [
         {
           format: gpuFormat
@@ -454,9 +452,9 @@ async function simpleCube() {
   const depthTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
     format: "depth24plus",
-    usage: GPUBufferUsage.RENDER_ATTACHMENT
+    usage: GPUTextureUsage.RENDER_ATTACHMENT
   });
-  const rederPassDesc = {
+  const renderPassDesc = {
     colorAttachments: [{
       view: ctx.getCurrentTexture().createView(),
       clearValue: { r : 0.2, g: 0.247, b: 0.314, a: 1.0 },
@@ -474,6 +472,15 @@ async function simpleCube() {
   modelMatrix = matrixTransform(modelMatrix);
   mvpMatrix = matrixMultiply(mvpMatrix, vpMatrix, modelMatrix);
   device.queue.writeBuffer(uniformBuffer, 0, mvpMatrix);
+  const commandEncoder = device.createCommandEncoder();
+  const renderPass = commandEncoder.beginRenderPass(renderPassDesc);
+  renderPass.setPipeline(renderPipe);
+  renderPass.setVertexBuffer(0, vertexBuffer);
+  renderPass.setVertexBuffer(1, colorBuffer);
+  renderPass.setBindGroup(0, uniformBindGroup);
+  renderPass.draw(nVertices);
+  renderPass.end();
+  device.queue.submit([commandEncoder.finish()]);
 }
   
   window.addEventListener("load", simpleCube);
