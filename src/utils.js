@@ -243,9 +243,7 @@ export function project(aspectRatio = 1.0, cameraPosition = [2, 2, 4], lookDirec
   resultMatrix = matrixMultiply(resultMatrix, projectionMatrix, viewMatrix);
   const cameraOptions = {
     eye: cameraPosition,
-    center: lookDirection,
-    zoomMatx: 100,
-    zoomSpeed: 2
+    center: lookDirection
   };
   return {
     viewMatrix,
@@ -253,6 +251,12 @@ export function project(aspectRatio = 1.0, cameraPosition = [2, 2, 4], lookDirec
     resultMatrix,
     cameraOptions
   };
+}
+
+export function createViewMatrix(position, lookDirection, upDirection) {
+  let vMatrix = newId4();
+  vMatrix = lookAt(vMatrix, position, lookDirection, upDirection);
+  return vMatrix;
 }
 
 export function matrixTranslate(m, translation) {

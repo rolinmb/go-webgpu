@@ -6,6 +6,8 @@ Must edit package.json and webpack.config.js to bundle the appropriate .js file 
 
 Not using gl-matrix in src/ .js files; however 3d-view-controls requires gl-matrix
 
+TODO: implement camera view / 3D rotations via user mouse without external libs
+
 I suggest running on Google Chrome or Chromium or Chrome Canary
 
 Build and run HTTPS hosting server (from root): go build -C src -o main && npm run prod && ./src/main
