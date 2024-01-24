@@ -2,10 +2,20 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>go-webgpu</title>
     <link rel="stylesheet" href="index.css">
   </head>
   <body>
+    <label>
+      <input id="animate-radio" type="radio" name="options" value="animate" checked>
+      View Animation
+    </lablel>
+    <label>
+      <input id="camera-radio" type="radio" name="options" value="camera">
+      Use Camera
+    </label>
+    <br/>
     <canvas id="webgpu-target"></canvas>
     <script src="dist.bundle.js"></script>
   </body>
