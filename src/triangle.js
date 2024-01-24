@@ -1,3 +1,25 @@
+const shaders = `
+  struct VertexOut{
+    @builtin(position) position : vec4f,
+    @location(0) color : vec4f
+  }
+  @vertex
+  fn vertex_main(@location(0) position: vec4f, @location(1) color: vec4f) -> VertexOut{
+    var output : VertexOut;
+    output.position = position;
+    output.color = color;
+    return output;
+  }
+  @fragment
+  fn fragment_main(fragData: VertexOut) -> @location(0) vec4f{
+  return fragData.color;}`;
+
+const vertices = new Float32Array([
+  0.0,  0.6, 0, 1, 1, 0, 0, 1,
+ -0.5, -0.6, 0, 1, 0, 1, 0, 1,
+  0.5, -0.6, 0, 1, 0, 0, 1, 1,
+]);
+
 async function simpleTriangle() {
     if (!navigator.gpu) {
       alert("WebGPU NOT SUPPORTED\n(could be non-Chrome browser, could be on mobile, or could have no detectable GPU)");
@@ -20,32 +42,11 @@ async function simpleTriangle() {
       format: navigator.gpu.getPreferredCanvasFormat(),
       alphaMode: "premultiplied",
     });
-    const vertices = new Float32Array([
-       0.0,  0.6, 0, 1, 1, 0, 0, 1,
-      -0.5, -0.6, 0, 1, 0, 1, 0, 1,
-       0.5, -0.6, 0, 1, 0, 0, 1, 1,
-    ]);
     const vertexBuffer = device.createBuffer({
       size: vertices.byteLength,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
     device.queue.writeBuffer(vertexBuffer, 0, vertices, 0, vertices.length);
-    const shaders = `
-    struct VertexOut{
-      @builtin(position) position : vec4f,
-      @location(0) color : vec4f
-    }
-    @vertex
-    fn vertex_main(@location(0) position: vec4f, @location(1) color: vec4f) -> VertexOut{
-      var output : VertexOut;
-      output.position = position;
-      output.color = color;
-      return output;
-    }
-    @fragment
-    fn fragment_main(fragData: VertexOut) -> @location(0) vec4f{
-      return fragData.color;
-    }`;
     const shaderModule = device.createShaderModule({
       code: shaders,
     });

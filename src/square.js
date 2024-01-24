@@ -8,13 +8,22 @@ fn main(@location(0) pos: vec4<f32>, @location(1) color: vec4<f32>) -> Output {
   var output: Output;
   output.Position = pos;
   output.vColor = color;
-  return output;
-}`;
+  return output;}`;
+  
 const fragmentShader = `
 @fragment
   fn main(@location(0) vColor: vec4<f32>) -> @location(0) vec4<f32> {
-  return vColor;
-}`;
+  return vColor;}`;
+
+const vertexData = new Float32Array([
+  //position    //color
+  -0.5, -0.5,   1, 0, 0,  // vertex a, index = 0
+  0.5, -0.5,   0, 1, 0,  // vertex b, index = 1
+  0.5,  0.5,   0, 0, 1,  // vertex c, index = 2  
+  -0.5,  0.5,   1, 1, 0   // vertex d, index = 3        
+]);
+
+const indexData = new Uint32Array([0, 1, 3, 3, 1, 2]);
 
 async function simpleSquare() {
   if (!navigator.gpu) {
@@ -39,13 +48,6 @@ async function simpleSquare() {
     format: gpuFormat,
     alphaMode: "opaque",
   });
-  const vertexData = new Float32Array([
-    //position    //color
-    -0.5, -0.5,   1, 0, 0,  // vertex a, index = 0
-    0.5, -0.5,   0, 1, 0,  // vertex b, index = 1
-    0.5,  0.5,   0, 0, 1,  // vertex c, index = 2  
-    -0.5,  0.5,   1, 1, 0   // vertex d, index = 3        
-  ]);
   const vertexBuffer = device.createBuffer({
     size: vertexData.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
@@ -53,7 +55,6 @@ async function simpleSquare() {
   });
   new Float32Array(vertexBuffer.getMappedRange()).set(vertexData);
   vertexBuffer.unmap();
-  const indexData = new Uint32Array([0, 1, 3, 3, 1, 2]);
   const indexBuffer = device.createBuffer({
     size: indexData.byteLength,
     usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
