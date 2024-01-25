@@ -1,4 +1,4 @@
-export const shaders = `
+export const cubeShaders = `
 struct Uniforms {
   mvpMatrix : mat4x4<f32>,
 }

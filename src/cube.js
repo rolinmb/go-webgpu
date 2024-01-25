@@ -1,5 +1,5 @@
 import { vertexPosData, vertexClrData, newId4, matrixMultiply, getProjection, rotateX, rotateY, rotateZ, translateZ, toId4 } from "./utils";
-import { shaders } from "./shaders";
+import { cubeShaders } from "./shaders";
 const AMORTIZATION = 0.99;
 
 async function simpleCube() {
@@ -81,7 +81,7 @@ async function simpleCube() {
     layout: "auto",
     vertex: {
       module: device.createShaderModule({
-        code: shaders
+        code: cubeShaders
       }),
       entryPoint: "vs_main",
       buffers: [
@@ -105,7 +105,7 @@ async function simpleCube() {
     },
     fragment: {
       module: device.createShaderModule({
-        code: shaders
+        code: cubeShaders
       }),
       entryPoint: "fs_main",
       targets: [
