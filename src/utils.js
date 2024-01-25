@@ -164,23 +164,13 @@ export function translateZ(m, x) {
   m[14] += x;
   return m;
 }
-
+// everything below here taken from the 'gl-mat' package mat4.js source code and github.com/jack1232/webgpu10 repo
 export function matrixMultiply(m, a, b) {
   let a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
   a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
   a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
   a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
   let b0, b1, b2, b3;
-  ///for (let i = 0; i < 4; i++) { // need to test this method
-  //  b0 = b[((i+1)*i)]; // Cache only the current line of the second matrix
-  //  b1 = b[((i+1)*i)+1];
-  //  b2 = b[((i+1)*i)+2];
-  //  b3 = b[((i+1)*i)+3];
-  //  m[((i+1)*i)] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-  //  m[((i+1)*i)+1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-  //  m[((i+1)*i)+2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-  //  m[((i+1)*i)+3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-  //}
   b0 = b[0]; // Cache only the current line of the second matrix
   b1 = b[1];
   b2 = b[2];
