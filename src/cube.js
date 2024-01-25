@@ -173,6 +173,7 @@ async function simpleCube() {
   /* end rendering setup */
   THETA = 0;
   PHI = 0;
+  /* define the draggable view animation as a function*/
   function draggableView() {
     if (!drag) {
       dX *= AMORTIZATION;
@@ -197,6 +198,7 @@ async function simpleCube() {
     device.queue.submit([commandEncoder.finish()]);
     window.requestAnimationFrame(draggableView);
   }
+  /* start draggable animation over "webgpu-target" canvas */
   draggableView();
 }
   
