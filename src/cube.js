@@ -1,6 +1,5 @@
 import { vertexPosData, vertexClrData, newId4, matrixMultiply, getProjection, rotateX, rotateY, rotateZ, translateZ, toId4 } from "./utils";
 import { shaders } from "./shaders";
-//const createCamera = require("3d-view-controls");
 const AMORTIZATION = 0.99;
 
 async function simpleCube() {
