@@ -105,24 +105,67 @@ export function toId4(m) {
   return m;
 }
 
-export function getPerspective(m, fovy, aspect, near, far) {
-  const f = 1.0 / Math.tan(fovy / 2);
-  m[0] = f / aspect, m[1] = 0; m[2] = 0, m[3] = 0,
-  m[4] = 0, m[5] = f, m[6] = 0, m[7] = 0,
-  m[8] = 0, m[9] = 0, m[11] = -1,
-  m[12] = 0, m[13] = 0, m[15] = 0;
-  if (far != null && far !== Infinity) {
-    const nf = 1 / (near - far);
-    m[10] = far * nf;
-    m[14] = far * near * nf;
-  } else {
-    m[10] = 1;
-    m[14] = -near;
-  }
+export function degToRad(theta) {
+  return theta*Math.PI/180;
+}
+
+export function getProjection(theta, a, zMin, zMax) {
+  let tan = Math.tan(degToRad(0.5*theta));
+  let A = -(zMax+zMin)/(zMax-zMin);
+  let b = (-2*zMax*zMin)/(zMax-zMin);
+  return new Float32Array([
+    0.5/tan, 0,         0, 0,
+    0,       0.5*a/tan, 0, 0,
+    0,       0,         A, -1,
+    0,       0,         b, 0
+  ]);
+}
+
+export function rotateX(m, theta) {
+  let c = Math.cos(theta);
+  let s = Math.sin(theta);
+  let mv1 = m[1], mv5 = m[5], mv9 = m[9];
+  m[1] = m[1]*c-m[2]*s;
+  m[5] = m[5]*c-m[6]*s;
+  m[9] = m[9]*c-m[10]*s;
+  m[2] = m[2]*c+mv1*s;
+  m[6] = m[6]*c+mv5*s;
+  m[10] = m[10]*c+mv9*s;
   return m;
 }
 
-export const EPSILON = 0.000001;
+export function rotateY(m, theta) {
+  let c = Math.cos(theta);
+  let s = Math.sin(theta);
+  let mv0=m[0], mv4=m[4], mv8=m[8];
+  m[0]=c*m[0]+s*m[2];
+  m[4]=c*m[4]+s*m[6];
+  m[8]=c*m[8]+s*m[10];
+  m[2]=c*m[2]-s*mv0;
+  m[6]=c*m[6]-s*mv4;
+  m[10]=c*m[10]-s*mv8;
+  return m;
+}
+
+export function rotateZ(m, theta) {
+  let c = Math.cos(theta);
+  let s = Math.sin(theta);
+  let mv0=m[0], mv4=m[4], mv8=m[8];
+  m[0]=c*m[0]-s*m[1];
+  m[4]=c*m[4]-s*m[5];
+  m[8]=c*m[8]-s*m[9];
+  m[1]=c*m[1]+s*mv0;
+  m[5]=c*m[5]+s*mv4;
+  m[9]=c*m[9]+s*mv8;
+  return m;
+}
+
+export function translateZ(m, x) {
+  m[14] += x;
+  return m;
+}
+
+/*export const EPSILON = 0.000001;
 
 export function lookAt(m, eye, center, up) {
   let x0, x1, x2, y0, y1, y2, z0, z1, z2, len;
@@ -183,22 +226,64 @@ export function lookAt(m, eye, center, up) {
   return m;
 }
 
+export function getPerspective(m, fovy, aspect, near, far) {
+  const f = 1.0 / Math.tan(fovy / 2);
+  m[0] = f / aspect, m[1] = 0; m[2] = 0, m[3] = 0,
+  m[4] = 0, m[5] = f, m[6] = 0, m[7] = 0,
+  m[8] = 0, m[9] = 0, m[11] = -1,
+  m[12] = 0, m[13] = 0, m[15] = 0;
+  if (far != null && far !== Infinity) {
+    const nf = 1 / (near - far);
+    m[10] = far * nf;
+    m[14] = far * near * nf;
+  } else {
+    m[10] = 1;
+    m[14] = -near;
+  }
+  return m;
+}
+
+export function viewProjection(aspectRatio = 1.0, cameraPosition = [2, 2, 4], lookDirection = [0, 0, 0], upDirection = [0, 1, 0]) {
+  let viewMatrix = newId4();
+  let projectionMatrix = newId4();
+  let resultMatrix = newId4();
+  projectionMatrix = getPerspective(projectionMatrix, 2*Math.PI/5, aspectRatio, 0.1, 100.0);
+  viewMatrix = lookAt(viewMatrix, cameraPosition, lookDirection, upDirection);
+  resultMatrix = matrixMultiply(resultMatrix, projectionMatrix, viewMatrix);
+  const cameraOptions = {
+    eye: cameraPosition,
+    center: lookDirection
+  };
+  return {
+    viewMatrix,
+    projectionMatrix,
+    resultMatrix,
+    cameraOptions
+  };
+}
+
+export function createViewMatrix(position, lookDirection, upDirection) {
+  let vMatrix = newId4();
+  vMatrix = lookAt(vMatrix, position, lookDirection, upDirection);
+  return vMatrix;
+}*/
+
 export function matrixMultiply(m, a, b) {
   let a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
   a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
   a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
   a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
   let b0, b1, b2, b3;
-  /*for (let i = 0; i < 4; i++) { // need to test this method
-    b0 = b[((i+1)*i)]; // Cache only the current line of the second matrix
-    b1 = b[((i+1)*i)+1];
-    b2 = b[((i+1)*i)+2];
-    b3 = b[((i+1)*i)+3];
-    m[((i+1)*i)] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
-    m[((i+1)*i)+1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
-    m[((i+1)*i)+2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
-    m[((i+1)*i)+3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
-  }*/
+  ///for (let i = 0; i < 4; i++) { // need to test this method
+  //  b0 = b[((i+1)*i)]; // Cache only the current line of the second matrix
+  //  b1 = b[((i+1)*i)+1];
+  //  b2 = b[((i+1)*i)+2];
+  //  b3 = b[((i+1)*i)+3];
+  //  m[((i+1)*i)] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+  //  m[((i+1)*i)+1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+  //  m[((i+1)*i)+2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+  //  m[((i+1)*i)+3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+  //}
   b0 = b[0]; // Cache only the current line of the second matrix
   b1 = b[1];
   b2 = b[2];
@@ -234,32 +319,7 @@ export function matrixMultiply(m, a, b) {
   return m;
 }
 
-export function project(aspectRatio = 1.0, cameraPosition = [2, 2, 4], lookDirection = [0, 0, 0], upDirection = [0, 1, 0]) {
-  let viewMatrix = newId4();
-  let projectionMatrix = newId4();
-  let resultMatrix = newId4();
-  projectionMatrix = getPerspective(projectionMatrix, 2*Math.PI/5, aspectRatio, 0.1, 100.0);
-  viewMatrix = lookAt(viewMatrix, cameraPosition, lookDirection, upDirection);
-  resultMatrix = matrixMultiply(resultMatrix, projectionMatrix, viewMatrix);
-  const cameraOptions = {
-    eye: cameraPosition,
-    center: lookDirection
-  };
-  return {
-    viewMatrix,
-    projectionMatrix,
-    resultMatrix,
-    cameraOptions
-  };
-}
-
-export function createViewMatrix(position, lookDirection, upDirection) {
-  let vMatrix = newId4();
-  vMatrix = lookAt(vMatrix, position, lookDirection, upDirection);
-  return vMatrix;
-}
-
-export function matrixTranslate(m, translation) {
+/*export function matrixTranslate(m, translation) {
   m[0] = 1, m[1] = 0; m[2] = 0, m[3] = 0,
   m[4] = 0, m[5] = 1, m[6] = 0, m[7] = 0,
   m[8] = 0, m[9] = 0, m[10] = 1, m[11] = 0;
@@ -324,4 +384,4 @@ export function matrixTransform(m, translation = [0, 0, 0], rotation = [0, 0, 0]
   m = matrixMultiply(m, rotateZMat, m);
   m = matrixMultiply(m, translateMat, m);
   return m;
-}
+}*/

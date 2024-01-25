@@ -1,8 +1,8 @@
-import { vertexPosData, vertexClrData, newId4, matrixMultiply, project, matrixTransform, createViewMatrix } from "./utils";
+import { vertexPosData, vertexClrData, newId4, matrixMultiply, getProjection, rotateX, rotateY, rotateZ, translateZ } from "./utils";
 import { shaders } from "./shaders";
 //const createCamera = require("3d-view-controls");
 
-async function simpleCube(doAnimation) {
+async function simpleCube() {
   if (!navigator.gpu) {
     alert("WebGPU NOT SUPPORTED\n(could be non-Chrome browser, could be on mobile, or could have no detectable GPU)");
     return;
@@ -18,11 +18,10 @@ async function simpleCube(doAnimation) {
     return;
   }
   const canvas = document.getElementById("webgpu-target");
-  var drag = false;
-  var xprev ,yprev;
-  var THETA = 0;
-  var PHI = 0;
-  var mouseDn = function(e) {
+  //var drag = false;
+  //var xprev, yprev;
+  var THETA, PHI, tLast;
+  /*var mouseDn = function(e) {
     drag = true;
     xprev = e.pageX;
     yprev = e.pageY;
@@ -45,7 +44,7 @@ async function simpleCube(doAnimation) {
   canvas.addEventListener("mousedown", mouseDn, false);
   canvas.addEventListener("mouseup", mouseUp, false);
   canvas.addEventListener("mouseout", mouseUp, false);
-  canvas.addEventListener("mousemove", mouseMv, false);
+  canvas.addEventListener("mousemove", mouseMv, false);*/
   const ctx = canvas.getContext("webgpu");
   const gpuFormat = navigator.gpu.getPreferredCanvasFormat();
   ctx.configure({
@@ -115,7 +114,7 @@ async function simpleCube(doAnimation) {
       depthCompare: "less"
     }
   });
-  let modelMatrix = newId4();
+  /*let modelMatrix = newId4();
   let mvpMatrix = newId4();
   let vMatrix = newId4();
   let vpMatrix = newId4();
@@ -128,7 +127,13 @@ async function simpleCube(doAnimation) {
     lookDirecton: vp.cameraOptions.center,
     upDirection: [0, 1, 0]
   }
-  vMatrix = createViewMatrix(vMatrix, cam.position, cam.lookDirecton, cam.upDirection);
+  vMatrix = createViewMatrix(vMatrix, cam.position, cam.lookDirecton, cam.upDirection);*/
+  let modelMatrix = newId4();
+  let viewMatrix = newId4();
+  viewMatrix = translateZ(viewMatrix, -5);
+  let projMatrix = getProjection(40, canvas.width/canvas.height, 1, 100);
+  let vpMatrix = newId4();
+  vpMatrix  =matrixMultiply(vpMatrix, projMatrix, viewMatrix);
   const uniformBuffer = device.createBuffer({
     size: 64,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
@@ -167,17 +172,24 @@ async function simpleCube(doAnimation) {
       depthStoreOp: "store"
     }
   };
-  function animate() {
-    if (!doAnimation) {
-      if (cam.tick()) {
-        const pMatrix = vp.projectionMatrix;
-        vMatrix = cam.matrix; // how can I copy webgl camera automation here?
-        vpMatrix = matrixMultiply(vpMatrix, pMatrix, vMatrix);
-      }
-    }
-    modelMatrix = matrixTransform(modelMatrix, [0, 0, 0], rotation);
-    mvpMatrix = matrixMultiply(mvpMatrix, vpMatrix, modelMatrix);
-    device.queue.writeBuffer(uniformBuffer, 0, mvpMatrix);
+  THETA = 0;
+  PHI = 0;
+  tLast = 0;
+  function animate(t) {
+    /*if (cam.tick()) {
+      const pMatrix = vp.projectionMatrix;
+       vMatrix = cam.matrix;
+      vpMatrix = matrixMultiply(vpMatrix, pMatrix, vMatrix);
+    }*/
+    //modelMatrix = matrixTransform(modelMatrix, [0, 0, 0], rotation);
+    //mvpMatrix = matrixMultiply(mvpMatrix, vpMatrix, modelMatrix);
+    let dt = t-tLast;
+    rotateX(modelMatrix, dt*0.00001);
+    rotateY(modelMatrix, dt*0.00005);
+    rotateZ(modelMatrix, dt*0.00005);
+    tLast = t;
+    modelMatrix = matrixMultiply(modelMatrix, vpMatrix, modelMatrix);
+    device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
     renderPassDesc.colorAttachments[0].view = ctx.getCurrentTexture().createView();
     const commandEncoder = device.createCommandEncoder();
     const renderPass = commandEncoder.beginRenderPass(renderPassDesc);
@@ -190,7 +202,7 @@ async function simpleCube(doAnimation) {
     device.queue.submit([commandEncoder.finish()]);
     window.requestAnimationFrame(animate);
   }
-  animate();
+  animate(0);
   /*modelMatrix = matrixTransform(modelMatrix);
   mvpMatrix = matrixMultiply(mvpMatrix, vpMatrix, modelMatrix);
   device.queue.writeBuffer(uniformBuffer, 0, mvpMatrix);
@@ -205,8 +217,5 @@ async function simpleCube(doAnimation) {
   device.queue.submit([commandEncoder.finish()]);*/
 }
   
-window.addEventListener("load", async function() {
-  let animateRadio = document.getElementById("animate-radio");
-  await simpleCube(animateRadio.checked);
-});
+window.addEventListener("load", simpleCube);
   

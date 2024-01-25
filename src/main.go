@@ -31,7 +31,7 @@ func main() {
     Addr: ":443",
     TLSConfig: tlsConfig,
   }
-  fmt.Println("main(): Starting local hosting server for go-webgl on localhost:433")
+  fmt.Println("main(): Starting local hosting server for go-webgpu on localhost:433")
   err := server.ListenAndServeTLS(CERTPATH, KEYPATH)
   if err != nil {
     log.Fatalf("main(): An error occured while starting the HTTPS server: %v", err)
