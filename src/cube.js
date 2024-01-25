@@ -1,6 +1,7 @@
-import { vertexPosData, vertexClrData, newId4, matrixMultiply, getProjection, rotateX, rotateY, rotateZ, translateZ } from "./utils";
+import { vertexPosData, vertexClrData, newId4, matrixMultiply, getProjection, rotateX, rotateY, rotateZ, translateZ, toId4 } from "./utils";
 import { shaders } from "./shaders";
 //const createCamera = require("3d-view-controls");
+const AMORTIZATION = 0.9777;
 
 async function simpleCube() {
   if (!navigator.gpu) {
@@ -18,10 +19,13 @@ async function simpleCube() {
     return;
   }
   const canvas = document.getElementById("webgpu-target");
-  //var drag = false;
-  //var xprev, yprev;
-  var THETA, PHI, tLast;
-  /*var mouseDn = function(e) {
+  var drag = false;
+  var xprev, yprev;
+  var THETA = 0; 
+  var PHI = 0;
+  var dX = 0;
+  var dY = 0;
+  var mouseDn = function(e) {
     drag = true;
     xprev = e.pageX;
     yprev = e.pageY;
@@ -33,10 +37,10 @@ async function simpleCube() {
   }
   var mouseMv = function(e) {
     if (!drag) {return false;}
-    let dx = e.pageX-xprev;
-    let dy = e.pageY-yprev;
-    THETA += dx*2*Math.PI/canvas.width;
-    PHI += dy*2*Math.PI/canvas.height;
+    dX = (e.pageX-xprev)*2*Math.PI/canvas.width;
+    dY = (e.pageY-yprev)*2*Math.PI/canvas.height;
+    THETA += dX;
+    PHI += dY;
     xprev = e.pageX;
     yprev = e.pageY;
     e.preventDefault();
@@ -44,7 +48,7 @@ async function simpleCube() {
   canvas.addEventListener("mousedown", mouseDn, false);
   canvas.addEventListener("mouseup", mouseUp, false);
   canvas.addEventListener("mouseout", mouseUp, false);
-  canvas.addEventListener("mousemove", mouseMv, false);*/
+  canvas.addEventListener("mousemove", mouseMv, false);
   const ctx = canvas.getContext("webgpu");
   const gpuFormat = navigator.gpu.getPreferredCanvasFormat();
   ctx.configure({
@@ -114,23 +118,9 @@ async function simpleCube() {
       depthCompare: "less"
     }
   });
-  /*let modelMatrix = newId4();
-  let mvpMatrix = newId4();
-  let vMatrix = newId4();
-  let vpMatrix = newId4();
-  const vp = project(canvas.width / canvas.height);
-  vpMatrix = vp.resultMatrix;
-  let rotation = new Float32Array([0, 0, 0]);
-  //var cam = createCamera(canvas, vp.cameraOptions);
-  var cam = {
-    position: vp.cameraOptions.eye,
-    lookDirecton: vp.cameraOptions.center,
-    upDirection: [0, 1, 0]
-  }
-  vMatrix = createViewMatrix(vMatrix, cam.position, cam.lookDirecton, cam.upDirection);*/
   let modelMatrix = newId4();
   let viewMatrix = newId4();
-  viewMatrix = translateZ(viewMatrix, -5);
+  viewMatrix = translateZ(viewMatrix, -6);
   let projMatrix = getProjection(40, canvas.width/canvas.height, 1, 100);
   let vpMatrix = newId4();
   vpMatrix  =matrixMultiply(vpMatrix, projMatrix, viewMatrix);
@@ -174,20 +164,16 @@ async function simpleCube() {
   };
   THETA = 0;
   PHI = 0;
-  tLast = 0;
-  function animate(t) {
-    /*if (cam.tick()) {
-      const pMatrix = vp.projectionMatrix;
-       vMatrix = cam.matrix;
-      vpMatrix = matrixMultiply(vpMatrix, pMatrix, vMatrix);
-    }*/
-    //modelMatrix = matrixTransform(modelMatrix, [0, 0, 0], rotation);
-    //mvpMatrix = matrixMultiply(mvpMatrix, vpMatrix, modelMatrix);
-    let dt = t-tLast;
-    rotateX(modelMatrix, dt*0.00001);
-    rotateY(modelMatrix, dt*0.00005);
-    rotateZ(modelMatrix, dt*0.00005);
-    tLast = t;
+  function draggableView() {
+    if (!drag) {
+      dX *= AMORTIZATION;
+      dY *= AMORTIZATION;
+      THETA += dX;
+      PHI += dY;
+    }
+    modelMatrix = toId4(modelMatrix);
+    rotateY(modelMatrix, THETA);
+    rotateX(modelMatrix, PHI);
     modelMatrix = matrixMultiply(modelMatrix, vpMatrix, modelMatrix);
     device.queue.writeBuffer(uniformBuffer, 0, modelMatrix);
     renderPassDesc.colorAttachments[0].view = ctx.getCurrentTexture().createView();
@@ -200,21 +186,9 @@ async function simpleCube() {
     renderPass.draw(nVertices);
     renderPass.end();
     device.queue.submit([commandEncoder.finish()]);
-    window.requestAnimationFrame(animate);
+    window.requestAnimationFrame(draggableView);
   }
-  animate(0);
-  /*modelMatrix = matrixTransform(modelMatrix);
-  mvpMatrix = matrixMultiply(mvpMatrix, vpMatrix, modelMatrix);
-  device.queue.writeBuffer(uniformBuffer, 0, mvpMatrix);
-  const commandEncoder = device.createCommandEncoder();
-  const renderPass = commandEncoder.beginRenderPass(renderPassDesc);
-  renderPass.setPipeline(renderPipe);
-  renderPass.setVertexBuffer(0, vertexBuffer);
-  renderPass.setVertexBuffer(1, colorBuffer);
-  renderPass.setBindGroup(0, uniformBindGroup);
-  renderPass.draw(nVertices);
-  renderPass.end();
-  device.queue.submit([commandEncoder.finish()]);*/
+  draggableView();
 }
   
 window.addEventListener("load", simpleCube);
