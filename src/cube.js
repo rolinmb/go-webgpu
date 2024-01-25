@@ -3,6 +3,7 @@ import { shaders } from "./shaders";
 const AMORTIZATION = 0.99;
 
 async function simpleCube() {
+  /* Start GPU init check */
   if (!navigator.gpu) {
     alert("WebGPU NOT SUPPORTED\n(could be non-Chrome browser, could be on mobile, or could have no detectable GPU)");
     return;
@@ -17,7 +18,9 @@ async function simpleCube() {
     alert("Couldn't get local GPU adapter logical device");
     return;
   }
+  /* end GPU init check */
   const canvas = document.getElementById("webgpu-target");
+  /* start canvas dragging setup */
   var drag = false;
   var xprev, yprev;
   var THETA = 0; 
@@ -48,7 +51,9 @@ async function simpleCube() {
   canvas.addEventListener("mouseup", mouseUp, false);
   canvas.addEventListener("mouseout", mouseUp, false);
   canvas.addEventListener("mousemove", mouseMv, false);
+  /* end canvas dragging setup */
   const ctx = canvas.getContext("webgpu");
+  /* start buffers setup */
   const gpuFormat = navigator.gpu.getPreferredCanvasFormat();
   ctx.configure({
     device: device,
@@ -70,6 +75,8 @@ async function simpleCube() {
   });
   new Float32Array(colorBuffer.getMappedRange()).set(vertexClrData);
   colorBuffer.unmap();
+  /* end buffers setup */
+  /* start rendering setup */
   const renderPipe = device.createRenderPipeline({
     layout: "auto",
     vertex: {
@@ -117,12 +124,14 @@ async function simpleCube() {
       depthCompare: "less"
     }
   });
+  /* canvas draggin setup continued */
   let modelMatrix = newId4();
   let viewMatrix = newId4();
   viewMatrix = translateZ(viewMatrix, -6);
   let projMatrix = getProjection(40, canvas.width/canvas.height, 1, 100);
   let vpMatrix = newId4();
-  vpMatrix  =matrixMultiply(vpMatrix, projMatrix, viewMatrix);
+  vpMatrix = matrixMultiply(vpMatrix, projMatrix, viewMatrix);
+  /* uniform buffer setup */
   const uniformBuffer = device.createBuffer({
     size: 64,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
@@ -161,6 +170,7 @@ async function simpleCube() {
       depthStoreOp: "store"
     }
   };
+  /* end rendering setup */
   THETA = 0;
   PHI = 0;
   function draggableView() {
