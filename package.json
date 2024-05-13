@@ -2,7 +2,7 @@
   "name": "go-webgpu",
   "version": "1.0.0",
   "description": "WebGPU (via vanilla JavaScript) hosted from golang HTTPS server",
-  "main": "src/sphere.js",
+  "main": "src/cube.js",
   "scripts": {
     "dev": "webpack --mode development",
     "prod": "webpack --mode production",
